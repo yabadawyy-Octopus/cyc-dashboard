@@ -1,12 +1,226 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>CYC Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CYC Dashboard</title>
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel compiler for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-[#05080e] text-white">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo, useCallback, useEffect } = React;
+
+    const INITIAL_CHUNKS = [
+      { id: 'CHK-9921', name: 'financial_audit_2026.enc', size: '2.4 GB', type: 'DOCUMENT', status: 'مُزامن', hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' },
+      { id: 'CHK-9922', name: 'user_vault_backup_v4.db', size: '14.8 GB', type: 'DATABASE', status: 'مُزامن', hash: '8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4' },
+      { id: 'CHK-9923', name: 'sec_keys_cluster_alpha.pem', size: '128 KB', type: 'KEY', status: 'قيد النسخ', hash: 'a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e' },
+      { id: 'CHK-9924', name: 'telemetry_logs_q3.log', size: '850 MB', type: 'LOG', status: 'مُزامن', hash: '1b89b715e69282808c96d426563a9c9944d57d39600a1bb712828737609a87d0' },
+      { id: 'CHK-9925', name: 'green_energy_report.pdf', size: '5.1 MB', type: 'DOCUMENT', status: 'مُزامن', hash: 'c234a9b1823ef0021c4391a2938102a39281a18290281b29381c01b23901b239' },
+      { id: 'CHK-9926', name: 'banana_fiber_nodes_map.json', size: '42 KB', type: 'KEY', status: 'قيد النسخ', hash: 'd918230192830192830192830192830192830192830192830192830192830192' }
+    ];
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('overview');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [filterType, setFilterType] = useState('ALL');
+      const [isSyncing, setIsSyncing] = useState(false);
+      const [carbonSaved, setCarbonSaved] = useState(1420);
+
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }, [activeTab]);
+
+      const filteredChunks = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+        return INITIAL_CHUNKS.filter(chunk => {
+          const matchesSearch = !query || 
+            chunk.name.toLowerCase().includes(query) || 
+            chunk.id.toLowerCase().includes(query) ||
+            chunk.hash.toLowerCase().includes(query);
+          const matchesType = filterType === 'ALL' || chunk.type === filterType;
+          return matchesSearch && matchesType;
+        });
+      }, [searchQuery, filterType]);
+
+      const handleSync = () => {
+        setIsSyncing(true);
+        setTimeout(() => {
+          setIsSyncing(false);
+          setCarbonSaved(prev => prev + 24);
+        }, 1200);
+      };
+
+      return (
+        <div dir="rtl" className="min-h-screen bg-[#05080e] text-white font-sans antialiased">
+          <header className="h-16 border-b border-[#16a34a]/20 bg-[#090d16]/95 sticky top-0 z-40 px-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-[#16a34a] to-[#0284c7] rounded-xl">
+                <i data-lucide="database" className="w-5 h-5 text-white"></i>
+              </div>
+              <div>
+                <span className="font-bold text-lg tracking-wider bg-gradient-to-r from-white via-slate-200 to-[#84cc16] bg-clip-text text-transparent">CYC</span>
+                <span className="text-[10px] text-[#84cc16] font-mono mr-2 px-1.5 py-0.5 bg-[#16a34a]/10 border border-[#16a34a]/30 rounded">ألياف سحابية خضراء</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 bg-[#16a34a]/10 border border-[#16a34a]/30 rounded-full text-xs font-mono text-[#84cc16]">
+                <i data-lucide="leaf" className="w-4 h-4 text-[#16a34a]"></i>
+                <span>عداد الكربون الرقمي: <strong className="text-white" dir="ltr">{carbonSaved.toLocaleString()} كجم CO₂</strong></span>
+              </div>
+              <button 
+                onClick={handleSync}
+                disabled={isSyncing}
+                className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold bg-[#16a34a] hover:bg-[#15803d] text-white rounded-lg transition-all cursor-pointer"
+              >
+                <i data-lucide="refresh-cw" className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`}></i>
+                {isSyncing ? 'جاري المزامنة...' : 'مزامنة العقد'}
+              </button>
+            </div>
+          </header>
+
+          <div className="flex">
+            <aside className="w-64 bg-[#090d16]/95 border-l border-[#16a34a]/20 p-4 min-h-[calc(100vh-4rem)]">
+              <nav className="space-y-2">
+                <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2 font-mono">لوحة التحكم المؤسسية</div>
+                {[
+                  { id: 'overview', label: 'الرئيسية والطاقة', icon: 'activity' },
+                  { id: 'vault', label: 'مستكشف الخزنة', icon: 'layers' },
+                  { id: 'billing', label: 'الاشتراكات والدفع', icon: 'credit-card' }
+                ].map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm transition-all cursor-pointer ${
+                      activeTab === item.id 
+                        ? 'bg-[#16a34a]/20 text-[#84cc16] border border-[#16a34a]/40 font-bold' 
+                        : 'text-slate-300 hover:bg-slate-800/40'
+                    }`}
+                  >
+                    <i data-lucide={item.icon} className="w-4 h-4"></i>
+                    {item.label}
+                  </button>
+                ))}
+              </nav>
+            </aside>
+
+            <main className="flex-1 p-6 space-y-6">
+              {activeTab === 'overview' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {[
+                      { label: 'إجمالي السعة المخزنة', value: '48.2 TB', icon: 'hard-drive' },
+                      { label: 'العقد السحابية النشطة', value: '1,024 / 1,024', icon: 'server' },
+                      { label: 'مستوى التشفير', value: 'AES-256-GCM', icon: 'shield-check' },
+                      { label: 'سرعة نقل الألياف', value: '3.4 Gbps', icon: 'cpu' },
+                    ].map((stat, i) => (
+                      <div key={i} className="bg-[#0b121e] border border-[#16a34a]/20 p-4 rounded-xl space-y-2">
+                        <div className="text-xs text-slate-400 flex justify-between items-center">
+                          <span>{stat.label}</span>
+                          <i data-lucide={stat.icon} className="w-4 h-4 text-[#0284c7]"></i>
+                        </div>
+                        <div className="text-xl font-bold font-mono text-white" dir="ltr">{stat.value}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="bg-[#0b121e] border border-[#16a34a]/20 rounded-xl p-5 space-y-4">
+                    <h3 className="font-semibold text-white">أداء السحابة البيئية (ألياف الموز)</h3>
+                    <div className="h-40 bg-[#05080e] border border-[#16a34a]/20 rounded-lg flex items-end justify-between p-4 gap-2">
+                      {[45, 60, 55, 80, 92, 70, 96, 65, 85, 90, 75, 95].map((h, idx) => (
+                        <div key={idx} className="w-full bg-[#16a34a]/40 hover:bg-[#16a34a] rounded-t transition-all" style={{ height: `${h}%` }}></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'vault' && (
+                <div className="bg-[#0b121e] border border-[#16a34a]/20 rounded-xl p-5 space-y-4">
+                  <div className="flex justify-between items-center gap-4">
+                    <input
+                      type="text"
+                      placeholder="البحث باسم الملف أو البصمة..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="bg-[#05080e] border border-[#16a34a]/30 rounded-lg px-4 py-2 text-xs w-72 text-white focus:outline-none"
+                    />
+                    <select
+                      value={filterType}
+                      onChange={(e) => setFilterType(e.target.value)}
+                      className="bg-[#05080e] border border-[#16a34a]/30 rounded-lg px-3 py-2 text-xs text-slate-300"
+                    >
+                      <option value="ALL">جميع الأنواع</option>
+                      <option value="DOCUMENT">مستندات</option>
+                      <option value="DATABASE">قواعد بيانات</option>
+                      <option value="KEY">مفاتيح آمنة</option>
+                    </select>
+                  </div>
+
+                  <div className="overflow-x-auto border border-[#16a34a]/20 rounded-lg">
+                    <table className="w-full text-right text-xs font-mono">
+                      <thead className="bg-[#05080e] text-slate-400 border-b border-[#16a34a]/20">
+                        <tr>
+                          <th className="p-3">المعرف</th>
+                          <th className="p-3">اسم الملف</th>
+                          <th className="p-3">النوع</th>
+                          <th className="p-3">الحجم</th>
+                          <th className="p-3">الحالة</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#16a34a]/10">
+                        {filteredChunks.map(chunk => (
+                          <tr key={chunk.id} className="hover:bg-[#16a34a]/5">
+                            <td className="p-3 text-[#84cc16] font-bold" dir="ltr">{chunk.id}</td>
+                            <td className="p-3 font-sans" dir="ltr">{chunk.name}</td>
+                            <td className="p-3" dir="ltr">{chunk.type}</td>
+                            <td className="p-3" dir="ltr">{chunk.size}</td>
+                            <td className="p-3"><span className="px-2 py-0.5 rounded bg-[#16a34a]/20 text-[#84cc16]">{chunk.status}</span></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'billing' && (
+                <div className="bg-[#0b121e] border border-[#16a34a]/20 rounded-xl p-6 space-y-4">
+                  <h3 className="text-lg font-bold text-white">إدارة الاشتراكات والمدفوعات</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { name: 'الباقة المبتدئة', price: '$15 / شهرياً', storage: '500 GB سحابة خضراء' },
+                      { name: 'الباقة الاحترافية', price: '$49 / شهرياً', storage: '2 TB ألياف سحابية' },
+                      { name: 'باقة الشركات', price: '$199 / شهرياً', storage: 'غير محدود' }
+                    ].map((plan, idx) => (
+                      <div key={idx} className="p-4 border border-[#16a34a]/30 bg-[#05080e] rounded-xl space-y-2">
+                        <div className="font-bold text-white">{plan.name}</div>
+                        <div className="text-xl font-bold font-mono text-[#84cc16]" dir="ltr">{plan.price}</div>
+                        <div className="text-xs text-slate-400">{plan.storage}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </main>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
 </html>
